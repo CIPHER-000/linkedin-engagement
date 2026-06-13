@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LinkedIn Engagement Accountability Audit</title>
+<!-- REPORT_CONFIG -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  :root{
+    --bg:#08090d;
+    --bg-2:#0b0d13;
+    --surface:rgba(255,255,255,.025);
+    --surface-2:rgba(255,255,255,.045);
+    --surface-3:rgba(255,255,255,.07);
+    --hairline:rgba(255,255,255,.06);
+    --ring:rgba(255,255,255,.10);
+    --text:#f4f4f5;
+    --muted:#a1a1aa;
+    --dim:#71717a;
+    --faint:#52525b;
+    --green:#22c55e;--green-bg:rgba(34,197,94,.10);
+    --yellow:#eab308;--yellow-bg:rgba(234,179,8,.10);
+    --red:#ef4444;--red-bg:rgba(239,68,68,.10);
+    --blue:#3b82f6;--blue-bg:rgba(59,130,246,.10);
+    --purple:#a855f7;
+    --shadow:0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Geist','Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:
+      radial-gradient(900px 500px at 8% -8%, rgba(255,255,255,.035), transparent 60%),
+      radial-gradient(700px 420px at 100% 0%, rgba(255,255,255,.022), transparent 55%),
+      var(--bg);
+    color:var(--text);min-height:100vh;
+    -webkit-font-smoothing:antialiased;font-size:13px;letter-spacing:-0.006em;
+    font-feature-settings:'cv11','ss01';
+  }
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:8px;border:2px solid transparent;background-clip:content-box}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.16);background-clip:content-box}
+
+  /* Top bar */
+  .topbar{
+    position:sticky;top:0;z-index:100;background:rgba(8,9,13,.72);backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--hairline);
+    padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  }
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#3f3f46,#18181b);box-shadow:inset 0 0 0 1px var(--ring);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:#fafafa}
+  .brand .name{font-weight:700;font-size:13.5px;line-height:1;letter-spacing:-0.01em}
+  .brand .sub{font-size:10.5px;color:var(--dim);margin-top:2px}
+  nav.tabs{display:flex;gap:2px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--hairline);padding:4px;border-radius:11px}
+  nav.tabs button{
+    display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;color:var(--muted);font-size:12px;font-weight:600;
+    cursor:pointer;border:none;background:transparent;font-family:inherit;transition:color .18s,background .18s,box-shadow .18s;letter-spacing:-0.01em;
+  }
+  nav.tabs button svg{width:14px;height:14px;opacity:.75}
+  nav.tabs button:hover{color:var(--text);background:var(--surface-2)}
+  nav.tabs button.active{color:#fafafa;background:var(--surface-3);box-shadow:0 1px 2px rgba(0,0,0,.5), inset 0 0 0 1px var(--ring)}
+  nav.tabs button.active svg{opacity:1}
+  .topbar .meta{font-size:11px;color:var(--dim);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .tb-right{display:flex;align-items:center;gap:12px}
+  .report-stamp{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.02em;padding:4px 9px;border-radius:999px;color:var(--muted);box-shadow:inset 0 0 0 1px var(--hairline);white-space:nowrap}
+  .report-stamp::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--dim)}
+  .report-stamp.rs-latest{color:#86efac;box-shadow:inset 0 0 0 1px rgba(34,197,94,.3)}
+  .report-stamp.rs-latest::before{background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,.7)}
+  .report-stamp.rs-arch{color:#a1a1aa;box-shadow:inset 0 0 0 1px var(--ring)}
+  .report-stamp.rs-arch::before{background:#a1a1aa}
+  .ghost-link{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;padding:7px 11px;border-radius:8px;box-shadow:inset 0 0 0 1px var(--hairline);transition:color .15s,box-shadow .15s}
+  .ghost-link:hover{color:var(--text);box-shadow:inset 0 0 0 1px var(--ring)}
+  .ghost-link svg{width:14px;height:14px}
+  @media (max-width:1400px){.topbar .meta{display:none} nav.tabs button span{display:none} nav.tabs button{padding:8px} .ghost-link span{display:none}}
+
+  main{padding:18px 18px 36px;max-width:1640px;margin:0 auto}
+  .section{display:none}
+  .section.active{display:block;animation:sectionIn .32s cubic-bezier(.22,1,.36,1)}
+  @keyframes sectionIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:14px;flex-wrap:wrap}
+  .sec-head h2{margin:0;font-size:22px;font-weight:700;letter-spacing:-0.025em;display:flex;align-items:center;gap:9px}
+  .sec-head h2 svg{width:18px;height:18px;color:var(--dim)}
+  .sec-head .desc{font-size:12px;color:var(--dim);margin-top:3px}
+
+  .grid{display:grid;gap:12px}
+  .g12{grid-template-columns:repeat(12,1fr)}
+  .c2{grid-column:span 2}.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}
+  .c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c9{grid-column:span 9}.c12{grid-column:span 12}
+  @media (max-width:1000px){.c2,.c3,.c4,.c5,.c6,.c7,.c8,.c9{grid-column:span 12}}
+
+  .panel{background:var(--surface);box-shadow:inset 0 0 0 1px var(--hairline);border-radius:14px;padding:14px 16px;transition:box-shadow .2s}
+  .panel:hover{box-shadow:inset 0 0 0 1px var(--ring), var(--shadow)}
+  .panel h3{margin:0 0 2px;font-size:13px;font-weight:650;letter-spacing:-0.01em}
+  .panel .sub{font-size:11px;color:var(--dim);margin-bottom:11px}
+
+  /* KPI */
+  .kpi{background:var(--surface);box-shadow:inset 0 0 0 1px var(--hairline);border-radius:12px;padding:11px 13px;transition:box-shadow .2s;position:relative;overflow:hidden}
+  .kpi:hover{box-shadow:inset 0 0 0 1px var(--ring), var(--shadow)}
+  .kpi .l{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+  .kpi .v{font-size:22px;font-weight:800;letter-spacing:-0.03em;margin-top:3px;line-height:1.05;font-variant-numeric:tabular-nums;color:var(--text)}
+  .kpi .s{font-size:10px;color:var(--faint);margin-top:3px}
+  .kpi.primary .v{font-size:28px;color:#fff}
+  .kpi.dot-green{box-shadow:inset 0 0 0 1px var(--hairline), inset 3px 0 0 var(--green)}
+  .kpi.dot-yellow{box-shadow:inset 0 0 0 1px var(--hairline), inset 3px 0 0 var(--yellow)}
+  .kpi.dot-red{box-shadow:inset 0 0 0 1px var(--hairline), inset 3px 0 0 var(--red)}
+  .kpi.dot-green .v{color:#4ade80}.kpi.dot-yellow .v{color:#facc15}.kpi.dot-red .v{color:#f87171}
+
+  /* status strip — primary emphasis */
+  .status{display:flex;align-items:center;gap:13px;border-radius:14px;padding:13px 16px;height:100%;
+    background:linear-gradient(135deg,rgba(234,179,8,.12),rgba(234,179,8,.02));box-shadow:inset 0 0 0 1px rgba(234,179,8,.25)}
+  .status.healthy{background:linear-gradient(135deg,rgba(34,197,94,.12),rgba(34,197,94,.02));box-shadow:inset 0 0 0 1px rgba(34,197,94,.25)}
+  .status.danger{background:linear-gradient(135deg,rgba(239,68,68,.12),rgba(239,68,68,.02));box-shadow:inset 0 0 0 1px rgba(239,68,68,.28)}
+  .status .dot{width:40px;height:40px;border-radius:50%;flex-shrink:0;background:radial-gradient(circle at 30% 30%,#fde047,#ca8a04);box-shadow:0 0 18px rgba(234,179,8,.5);animation:breathe 2.6s ease-in-out infinite}
+  .status.healthy .dot{background:radial-gradient(circle at 30% 30%,#4ade80,#16a34a);box-shadow:0 0 18px rgba(34,197,94,.5)}
+  .status.danger .dot{background:radial-gradient(circle at 30% 30%,#fca5a5,#dc2626);box-shadow:0 0 18px rgba(239,68,68,.5)}
+  @keyframes breathe{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.08);opacity:.88}}
+  .status .lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);font-weight:700}
+  .status .ttl{font-size:20px;font-weight:800;letter-spacing:-0.025em;line-height:1.1}
+  .status .pc{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+  /* spotlight */
+  .spot{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:12px;box-shadow:inset 0 0 0 1px var(--hairline);background:var(--surface);height:100%;transition:box-shadow .2s}
+  .spot:hover{box-shadow:inset 0 0 0 1px var(--ring)}
+  .spot .av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;color:#0a0a0a;background:linear-gradient(135deg,#4ade80,#16a34a)}
+  .spot.low .av{background:linear-gradient(135deg,#f87171,#b91c1c);color:#fff}
+  .spot .role{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--dim);font-weight:700}
+  .spot .nm{font-size:13.5px;font-weight:700;letter-spacing:-0.01em}
+  .spot .mt{font-size:10px;color:var(--dim)}
+  .spot .pc{margin-left:auto;font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
+  .spot.low .pc{color:#f87171}.spot:not(.low) .pc{color:#4ade80}
+
+  .badge{display:inline-flex;align-items:center;padding:1px 7px;border-radius:999px;font-size:9.5px;font-weight:700;box-shadow:inset 0 0 0 1px transparent;white-space:nowrap}
+  .b-green{background:var(--green-bg);color:#86efac;box-shadow:inset 0 0 0 1px rgba(34,197,94,.3)}
+  .b-yellow{background:var(--yellow-bg);color:#fde68a;box-shadow:inset 0 0 0 1px rgba(234,179,8,.3)}
+  .b-red{background:var(--red-bg);color:#fca5a5;box-shadow:inset 0 0 0 1px rgba(239,68,68,.3)}
+  .b-blue{background:var(--blue-bg);color:#93c5fd;box-shadow:inset 0 0 0 1px rgba(59,130,246,.3)}
+  .b-zero{background:#ef4444;color:#fff;box-shadow:inset 0 0 0 1px #ef4444;animation:zp 1.8s infinite}
+  @keyframes zp{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}50%{box-shadow:0 0 0 5px rgba(239,68,68,0)}}
+</style>
+</head>
+<body>
+<style>
+  /* HEATMAP — centerpiece */
+  .heat-wrap{box-shadow:inset 0 0 0 1px var(--hairline), var(--shadow);border-radius:14px;overflow:auto;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent)}
+  table.heat{border-collapse:separate;border-spacing:0;width:100%;font-size:11.5px;min-width:1080px}
+  table.heat th,table.heat td{padding:5px 4px;text-align:center;border-bottom:1px solid var(--hairline)}
+  table.heat thead th{position:sticky;top:0;z-index:3;background:#0e1016;font-size:9.5px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:8px 4px}
+  table.heat thead th .ow{display:block;font-size:8.5px;color:var(--faint);font-weight:500;text-transform:none;letter-spacing:0;margin-top:1px}
+  table.heat td.name{position:sticky;left:0;z-index:2;text-align:left;background:#0e1016;padding-left:12px;padding-right:8px;font-weight:600;font-size:12px;white-space:nowrap;min-width:190px}
+  table.heat th.name{position:sticky;left:0;z-index:4;background:#0e1016;text-align:left;padding-left:12px}
+  table.heat td.sm{font-weight:700;font-variant-numeric:tabular-nums;background:rgba(255,255,255,.018)}
+  table.heat td.smpct{font-size:12.5px;font-weight:800}
+  table.heat tbody tr{transition:background .15s}
+  table.heat tbody tr:hover td{background:rgba(255,255,255,.05)}
+  table.heat tbody tr:hover td.name{background:#15181f}
+  .cell{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;font-size:11px;font-weight:700;cursor:default;transition:transform .12s ease, box-shadow .12s ease;opacity:0;animation:cellIn .4s ease forwards}
+  td:hover .cell{transform:scale(1.22);box-shadow:0 4px 12px rgba(0,0,0,.5);z-index:5}
+  @keyframes cellIn{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
+  .c-eng{background:#16a34a;color:#fff}.c-mis{background:#ef4444;color:#fff}.c-own{background:#a855f7;color:#fff}.c-exc{background:#3b82f6;color:#fff}.c-na{background:rgba(255,255,255,.05);color:var(--faint)}
+  .hr-core td.name{box-shadow:inset 3px 0 0 #22c55e}
+  .hr-border td.name{box-shadow:inset 3px 0 0 #eab308}
+  .hr-risk td.name{box-shadow:inset 3px 0 0 #ef4444}
+  .hr-new td.name{box-shadow:inset 3px 0 0 #3b82f6}
+  .hr-zero td.name{background:linear-gradient(90deg,rgba(239,68,68,.22),#0e1016 78%)}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:10.5px;color:var(--dim);align-items:center}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .legend .sw{width:12px;height:12px;border-radius:3px}
+  #heatTip{position:fixed;z-index:999;pointer-events:none;background:#16181f;color:#f4f4f5;font-size:11px;padding:7px 10px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.6), inset 0 0 0 1px var(--ring);opacity:0;transform:translateY(4px);transition:opacity .12s, transform .12s;max-width:240px;line-height:1.5}
+  #heatTip.show{opacity:1;transform:none}
+  #heatTip b{font-weight:700}
+  #heatTip .k{color:var(--dim)}
+
+  /* leaderboard */
+  .lb-h{display:grid;grid-template-columns:26px 1fr 60px 42px 42px 74px;gap:8px;padding:0 9px 6px;font-size:9.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);font-weight:700}
+  .lb-h .n{text-align:center}.lb-h .p{text-align:right}
+  .lb{display:flex;flex-direction:column;gap:4px}
+  .lb-row{display:grid;grid-template-columns:26px 1fr 60px 42px 42px 74px;gap:8px;align-items:center;padding:7px 9px;border-radius:9px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--hairline);transition:transform .14s, box-shadow .14s}
+  .lb-row:hover{transform:translateX(3px);box-shadow:inset 0 0 0 1px var(--ring)}
+  .lb-row .rk{text-align:center;font-weight:700;font-size:12px;color:var(--dim)}
+  .lb-row.m1 .rk,.lb-row.m2 .rk,.lb-row.m3 .rk{font-size:15px}
+  .lb-row .nm{font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;min-width:0;letter-spacing:-0.01em}
+  .lb-row .bar{height:6px;border-radius:4px;background:rgba(255,255,255,.05);overflow:hidden;margin-top:5px}
+  .lb-row .bar>span{display:block;height:100%;border-radius:4px;width:0;transition:width .9s cubic-bezier(.22,1,.36,1)}
+  .lb-row .n{text-align:center;font-weight:700;font-size:12px;font-variant-numeric:tabular-nums}
+  .lb-row .p{text-align:right}
+
+  /* accountability */
+  .acc-item{display:grid;grid-template-columns:20px 1fr auto;gap:9px;align-items:center;padding:8px 11px;border-radius:10px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--hairline);margin-bottom:6px;transition:transform .14s, box-shadow .14s}
+  .acc-item:hover{transform:translateX(3px);box-shadow:inset 0 0 0 1px var(--ring)}
+  .acc-item .rk{font-size:14px;text-align:center}
+  .acc-item .nm{font-size:12.5px;font-weight:600;letter-spacing:-0.01em}
+  .acc-item .mt{font-size:10px;color:var(--dim);margin-top:1px}
+  .acc-item .pc{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
+  .acc-top .pc{color:#4ade80}
+  .acc-watch{background:rgba(234,179,8,.05);box-shadow:inset 0 0 0 1px rgba(234,179,8,.18)}
+  .acc-watch .pc{color:#facc15}
+  .acc-risk{background:rgba(239,68,68,.05);box-shadow:inset 0 0 0 1px rgba(239,68,68,.2)}
+  .acc-risk .pc{color:#f87171}
+  .col-title{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;margin-bottom:10px;letter-spacing:-0.01em}
+  .col-title svg{width:16px;height:16px}
+
+  .chart-xs{position:relative;height:150px}
+  .chart-sm{position:relative;height:210px}
+  .chart-md{position:relative;height:340px}
+
+  /* roster */
+  .roster{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+  .rt{padding:11px 13px;border-radius:11px;box-shadow:inset 0 0 0 1px var(--hairline);background:var(--surface)}
+  .rt .h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .rt .chips{display:flex;flex-wrap:wrap;gap:5px}
+  .chip{background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--hairline);padding:3px 8px;border-radius:7px;font-size:10.5px;font-weight:500;display:inline-flex;gap:4px;align-items:center}
+  .chip .p{color:var(--dim);font-size:9.5px;font-variant-numeric:tabular-nums}
+
+  /* trend stat */
+  .tstat{padding:11px 13px;border-radius:11px;box-shadow:inset 0 0 0 1px var(--hairline);background:var(--surface)}
+  .tstat .l{font-size:9.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--dim);font-weight:700}
+  .tstat .v{font-size:15px;font-weight:800;margin-top:3px;letter-spacing:-0.01em}
+  .tstat .s{font-size:10px;color:var(--dim);margin-top:2px}
+  .tstat.up{box-shadow:inset 0 0 0 1px rgba(34,197,94,.25)}.tstat.up .v{color:#4ade80}
+  .tstat.down{box-shadow:inset 0 0 0 1px rgba(239,68,68,.25)}.tstat.down .v{color:#f87171}
+
+  .btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);color:var(--text);box-shadow:inset 0 0 0 1px var(--hairline);padding:7px 13px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:box-shadow .15s}
+  .btn:hover{box-shadow:inset 0 0 0 1px var(--ring)}
+  .btn svg{width:14px;height:14px}
+
+  /* SHARE */
+  #share-card{background:linear-gradient(160deg,#0e1016,#0a0b10);box-shadow:inset 0 0 0 1px var(--ring), var(--shadow);border-radius:18px;padding:24px;max-width:1020px;margin:0 auto}
+  #share-card .sc-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;padding-bottom:15px;border-bottom:1px solid var(--hairline)}
+  #share-card .sc-title{font-size:21px;font-weight:800;letter-spacing:-0.025em}
+  #share-card .sc-sub{font-size:11.5px;color:var(--dim);margin-top:3px}
+  #share-card .sc-big{text-align:right}
+  #share-card .sc-big .v{font-size:36px;font-weight:800;letter-spacing:-0.03em;line-height:1;font-variant-numeric:tabular-nums}
+  #share-card .sc-big .l{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);font-weight:700;margin-top:3px}
+  .sc-mini-heat{display:grid;gap:2px}
+  .sc-mini-row{display:grid;gap:2px}
+  .sc-mini-cell{height:12px;border-radius:3px}
+  .sc-list .row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:12px;border-bottom:1px solid var(--hairline)}
+  .sc-list .row .nm{font-weight:600;display:flex;gap:6px;align-items:center}
+  .sc-list .row .pc{font-weight:800;font-variant-numeric:tabular-nums}
+  .sc-section-title{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);font-weight:700;margin-bottom:9px}
+
+  /* ============================================================
+     RESPONSIVE LAYER — additive only. Desktop (>=1024px) unchanged.
+     Appended last so it overrides the earlier max-width:1000px rule.
+     ============================================================ */
+  html{overflow-x:clip}
+  canvas{max-width:100%}
+
+  /* ---- Tablet: 768px–1023px — KPIs 3-up, panels 2-up ---- */
+  @media (min-width:768px) and (max-width:1023px){
+    .c2{grid-column:span 4}      /* 6 KPIs -> 3 per row */
+    .c3{grid-column:span 6}
+    .c4{grid-column:span 6}
+    .c5{grid-column:span 6}
+    .c6{grid-column:span 6}      /* rankings stay side-by-side */
+    .c7{grid-column:span 12}
+    .c8{grid-column:span 12}
+    .c9{grid-column:span 12}
+    /* Tighten leaderboards so names + badges fit in half-width panels */
+    .lb-h,.lb-row{grid-template-columns:20px 1fr 48px 34px 34px 52px;gap:5px}
+    .lb-row .nm{font-size:11px}
+  }
+
+  /* ---- Mobile: <=767px — single column ---- */
+  @media (max-width:767px){
+    .c2,.c3,.c4,.c5,.c6,.c7,.c8,.c9{grid-column:span 12}
+    main{padding:14px 12px 32px}
+    .grid{gap:10px}
+    .sec-head{gap:10px}
+    .sec-head h2{font-size:19px}
+
+    /* Header: stack branding + controls; tabs become a scrollable icon rail */
+    .topbar{flex-wrap:wrap;padding:10px 12px;gap:10px}
+    .brand{flex:1 1 auto;min-width:0}
+    .brand .name{font-size:13px}
+    .tb-right{flex:0 0 auto;gap:8px}
+    nav.tabs{order:3;flex-basis:100%;overflow-x:auto;flex-wrap:nowrap;justify-content:flex-start;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+    nav.tabs::-webkit-scrollbar{display:none}
+    nav.tabs button{flex:0 0 auto;min-width:44px;min-height:44px;justify-content:center}
+
+    /* Touch targets (>=44px) */
+    .ghost-link{min-height:44px}
+    .btn{min-height:44px;padding:10px 16px}
+
+    /* Rankings leaderboards: keep ALL columns, tighten to fit the viewport */
+    .lb-h,.lb-row{grid-template-columns:20px 1fr 40px 30px 30px 50px;gap:5px}
+    .lb-row{padding:9px 7px}
+
+    /* Heatmap: keep every column; trim sticky name width but keep it readable */
+    table.heat td.name{min-width:150px;padding-left:10px}
+
+    /* Share card fits small screens */
+    #share-card{padding:16px}
+    #share-card .sc-head{flex-direction:column;gap:10px}
+    #share-card .sc-big{text-align:left}
+  }
+
+  /* ---- Very small phones (<=360px): tighten leaderboard typography ---- */
+  @media (max-width:360px){
+    .lb-h,.lb-row{grid-template-columns:18px 1fr 34px 26px 26px 44px;gap:4px}
+    .lb-row .n,.lb-row .nm{font-size:11px}
+  }
+</style>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="logo">LE</div>
+    <div><div class="name">Engagement Accountability Audit</div><div class="sub">LinkedIn Community</div></div>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button data-s="summary" class="active"><i data-lucide="layout-dashboard"></i><span>Summary</span></button>
+    <button data-s="heatmap"><i data-lucide="grid-3x3"></i><span>Heatmap</span></button>
+    <button data-s="accountability"><i data-lucide="scale"></i><span>Accountability</span></button>
+    <button data-s="rankings"><i data-lucide="trophy"></i><span>Rankings</span></button>
+    <button data-s="health"><i data-lucide="activity"></i><span>Health</span></button>
+    <button data-s="posts"><i data-lucide="trending-up"></i><span>Posts</span></button>
+    <button data-s="share"><i data-lucide="share-2"></i><span>Share Snapshot</span></button>
+  </nav>
+  <div class="tb-right">
+    <span id="reportStamp" class="report-stamp"></span>
+    <a id="archiveLink" href="archive.html" class="ghost-link" title="Report archive"><i data-lucide="history"></i><span>Archive</span></a>
+    <div class="meta" id="meta"></div>
+  </div>
+</div>
+
+<div id="heatTip"></div>
+
+<main>
+  <!-- SUMMARY -->
+  <section class="section active" data-section="summary">
+    <div class="grid g12">
+      <div class="c2"><div class="kpi"><div class="l">Members</div><div class="v" id="kMem">—</div><div class="s">1 new</div></div></div>
+      <div class="c2"><div class="kpi"><div class="l">Valid Posts</div><div class="v" id="kPost">—</div><div class="s">1 excluded</div></div></div>
+      <div class="c2"><div class="kpi primary"><div class="l">Participation</div><div class="v" id="kPart">—</div><div class="s" id="kPartS">—</div></div></div>
+      <div class="c2"><div class="kpi dot-green"><div class="l">Core</div><div class="v" id="kCore">—</div><div class="s">≥80%</div></div></div>
+      <div class="c2"><div class="kpi dot-yellow"><div class="l">Borderline</div><div class="v" id="kBord">—</div><div class="s">50–79%</div></div></div>
+      <div class="c2"><div class="kpi dot-red"><div class="l">At Risk</div><div class="v" id="kRisk">—</div><div class="s">&lt;50%</div></div></div>
+
+      <div class="c4"><div class="status" id="status"><div class="dot"></div><div><div class="lbl">Community Status</div><div class="ttl" id="stTtl">—</div><div class="pc" id="stPc">—</div></div></div></div>
+      <div class="c3"><div class="spot" id="topSpot"></div></div>
+      <div class="c3"><div class="spot low" id="lowSpot"></div></div>
+      <div class="c2">
+        <div class="panel" style="padding:10px 12px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">Trend</h3><span id="trArrow" style="font-size:16px;font-weight:800"></span></div>
+          <div style="position:relative;height:42px;margin-top:4px"><canvas id="miniTrend"></canvas></div>
+          <div class="sub" id="trSub" style="margin:4px 0 0"></div>
+        </div>
+      </div>
+
+      <div class="c12">
+        <div class="sec-head" style="margin-top:6px"><div><h2><i data-lucide="grid-3x3"></i>Participation Heatmap</h2><div class="desc">Primary accountability view — every member across every valid post.</div></div>
+          <div class="legend">
+            <span><span class="sw" style="background:#16a34a"></span>Engaged</span>
+            <span><span class="sw" style="background:#ef4444"></span>Missed</span>
+            <span><span class="sw" style="background:#a855f7"></span>Owner</span>
+            <span><span class="sw" style="background:#3b82f6"></span>Excused</span>
+            <span><span class="sw" style="background:rgba(255,255,255,.08)"></span>N/A</span>
+          </div>
+        </div>
+        <div class="heat-wrap"><table class="heat" id="heatSummary"></table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HEATMAP -->
+  <section class="section" data-section="heatmap">
+    <div class="sec-head"><div><h2><i data-lucide="grid-3x3"></i>Participation Heatmap</h2><div class="desc">Sticky headers · hover any cell for detail · participation %, comments &amp; misses beside each member.</div></div>
+      <div class="legend">
+        <span><span class="sw" style="background:#16a34a"></span>Engaged</span>
+        <span><span class="sw" style="background:#ef4444"></span>Missed</span>
+        <span><span class="sw" style="background:#a855f7"></span>Owner</span>
+        <span><span class="sw" style="background:#3b82f6"></span>Excused</span>
+        <span><span class="sw" style="background:rgba(255,255,255,.08)"></span>Not Eligible</span>
+      </div>
+    </div>
+    <div class="heat-wrap" style="max-height:78vh"><table class="heat" id="heatFull"></table></div>
+  </section>
+
+  <!-- ACCOUNTABILITY -->
+  <section class="section" data-section="accountability">
+    <div class="sec-head"><div><h2><i data-lucide="scale"></i>Community Accountability</h2><div class="desc">Who to celebrate, who to nudge, who to address.</div></div></div>
+    <div class="grid g12">
+      <div class="c4"><div class="panel"><div class="col-title"><i data-lucide="flame" style="color:#fb923c"></i>Top Contributors</div><div id="accTop"></div></div></div>
+      <div class="c4"><div class="panel"><div class="col-title"><i data-lucide="alert-triangle" style="color:#facc15"></i>Watch List <span class="badge b-yellow">Borderline</span></div><div id="accWatch"></div></div></div>
+      <div class="c4"><div class="panel"><div class="col-title"><i data-lucide="siren" style="color:#f87171"></i>At-Risk Members</div><div id="accRisk"></div></div></div>
+    </div>
+  </section>
+
+  <!-- RANKINGS -->
+  <section class="section" data-section="rankings">
+    <div class="sec-head"><div><h2><i data-lucide="trophy"></i>Community Rankings</h2><div class="desc">Participation leaderboard and engagement debt side by side.</div></div></div>
+    <div class="grid g12">
+      <div class="c6"><div class="panel"><h3>Participation Leaderboard</h3><div class="sub">Ranked by % of eligible posts engaged</div>
+        <div class="lb-h"><div></div><div>Member</div><div class="n">%</div><div class="n">Cmt</div><div class="n">Mis</div><div class="p">Tier</div></div>
+        <div class="lb" id="partLb"></div></div></div>
+      <div class="c6"><div class="panel"><h3>Engagement Debt</h3><div class="sub">Ranked by missed opportunities</div>
+        <div class="lb-h"><div></div><div>Member</div><div class="n">Mis</div><div class="n">Cmt</div><div class="n">Elg</div><div class="p">Tier</div></div>
+        <div class="lb" id="debtLb"></div></div></div>
+    </div>
+  </section>
+
+  <!-- HEALTH -->
+  <section class="section" data-section="health">
+    <div class="sec-head"><div><h2><i data-lucide="activity"></i>Community Health</h2><div class="desc">Composition and the full tier roster.</div></div></div>
+    <div class="grid g12">
+      <div class="c4"><div class="panel"><h3>Tier Breakdown</h3><div class="sub">All 18 members</div><div class="chart-sm"><canvas id="tierDonut"></canvas></div></div></div>
+      <div class="c4"><div class="panel"><h3>Participation Bands</h3><div class="sub">Members per band</div><div class="chart-sm"><canvas id="bandChart"></canvas></div></div></div>
+      <div class="c4"><div class="panel"><h3>Engagement Split</h3><div class="sub">Comments vs missed vs excused</div><div class="chart-sm"><canvas id="splitChart"></canvas></div></div></div>
+      <div class="c12"><div class="panel"><h3>Full Tier Roster</h3><div class="sub">Every member grouped by classification</div><div class="roster" id="roster"></div></div></div>
+    </div>
+  </section>
+
+  <!-- POSTS -->
+  <section class="section" data-section="posts">
+    <div class="sec-head"><div><h2><i data-lucide="trending-up"></i>Post Performance</h2><div class="desc">Engagement trajectory across the audit period.</div></div></div>
+    <div class="grid g12" id="trendStats" style="margin-bottom:12px"></div>
+    <div class="panel"><h3>Engagement over time</h3><div class="sub">Commenters per post (chronological)</div><div class="chart-md"><canvas id="trendBig"></canvas></div></div>
+  </section>
+
+  <!-- SHARE -->
+  <section class="section" data-section="share">
+    <div class="sec-head"><div><h2><i data-lucide="share-2"></i>Share Snapshot</h2><div class="desc">One screenshot tells the whole story — built for WhatsApp, LinkedIn &amp; Slack.</div></div>
+      <button class="btn" id="dlShare"><i data-lucide="download"></i>Download PNG</button></div>
+    <div id="share-card">
+      <div class="sc-head">
+        <div><div class="sc-title">LinkedIn Engagement Audit</div><div class="sc-sub" id="scSub">—</div></div>
+        <div class="sc-big"><div class="v" id="scPart">—</div><div class="l">Community Participation</div></div>
+      </div>
+      <div class="grid g12">
+        <div class="c4"><div class="sc-section-title">Tier Distribution</div><div class="chart-xs"><canvas id="scDonut"></canvas></div></div>
+        <div class="c4"><div class="sc-section-title">Top 5 Contributors</div><div class="sc-list" id="scTop"></div></div>
+        <div class="c4"><div class="sc-section-title">Bottom 5 Contributors</div><div class="sc-list" id="scBottom"></div></div>
+        <div class="c7"><div class="sc-section-title">Mini Heatmap</div><div class="sc-mini-heat" id="scHeat"></div></div>
+        <div class="c5"><div class="sc-section-title">Participation Trend</div><div class="chart-xs"><canvas id="scTrend"></canvas></div><div class="tstat" id="scTrendStat" style="margin-top:8px"></div></div>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+  Chart.register(ChartDataLabels);
+  Chart.defaults.color='#a1a1aa';
+  Chart.defaults.font.family="Geist, Inter, system-ui, sans-serif";
+  Chart.defaults.font.size=10;
+  Chart.defaults.borderColor='rgba(255,255,255,.06)';
+
+  // ===== DATA =====
+  const members=["Henry","Stephnora","Oluwabori","Monica","Rapheal Muritala","Oluwabunmi","Iyin","Ruth","Akolade","Demi","Timilehin","Eniafe","Harris","Omotayo","Ralph","Omosola","Dolapo","Franklin"];
+  const posts=[
+    {n:1,owner:"Dolapo",engaged:["Henry","Stephnora","Oluwabori","Monica","Rapheal Muritala","Oluwabunmi","Iyin","Demi","Timilehin","Eniafe","Harris","Omotayo","Ralph","Omosola","Akolade"]},
+    {n:2,owner:"Stephnora",engaged:["Henry","Oluwabori","Monica","Rapheal Muritala","Oluwabunmi","Iyin","Demi","Timilehin","Harris","Omosola","Akolade","Dolapo","Ralph","Omotayo"]},
+    {n:3,owner:"Oluwabori",engaged:["Henry","Stephnora","Monica","Rapheal Muritala","Oluwabunmi","Iyin","Demi","Timilehin","Eniafe","Harris","Omotayo","Omosola","Dolapo"]},
+    {n:4,owner:"Akolade",engaged:["Henry","Stephnora","Oluwabori","Monica","Oluwabunmi","Iyin","Demi","Timilehin","Harris","Omosola","Dolapo"]},
+    {n:5,owner:"Oluwabunmi",engaged:["Henry","Oluwabori","Monica","Iyin","Timilehin","Harris","Omotayo","Omosola","Akolade","Demi","Dolapo"]},
+    {n:6,owner:"Iyin",engaged:["Henry","Oluwabori","Monica","Oluwabunmi","Demi","Harris","Omosola","Dolapo"]},
+    {n:7,owner:"Timilehin",engaged:["Henry","Oluwabori","Monica","Oluwabunmi","Iyin","Harris","Omosola","Dolapo","Omotayo","Ralph","Akolade"]},
+    {n:8,owner:"Franklin",engaged:["Henry","Oluwabori","Oluwabunmi","Iyin","Demi","Harris","Omosola","Dolapo","Monica","Omotayo","Eniafe"]},
+    {n:9,owner:"Stephnora",engaged:["Henry","Oluwabori","Oluwabunmi","Iyin","Demi","Dolapo","Monica","Omotayo","Ralph"]},
+    {n:10,owner:"Demi",engaged:["Henry","Oluwabori","Iyin","Dolapo","Monica","Stephnora"]},
+    {n:11,owner:"Eniafe",engaged:["Henry","Oluwabori","Monica","Stephnora","Ralph"],excused:["Dolapo"]},
+    {n:12,owner:"Oluwabori",engaged:["Henry","Monica","Stephnora","Iyin"]},
+    {n:14,owner:"Henry",engaged:["Dolapo","Ralph"]}
+  ];
+  const fStart=posts.findIndex(p=>p.n===8);
+  const cell=(m,i)=>{const p=posts[i];if(m==="Franklin"&&i<fStart)return"na";if(p.owner===m)return"owner";if(p.excused&&p.excused.includes(m))return"excused";if(p.engaged.includes(m))return"engaged";return"missed"};
+  const stats=members.map(m=>{let e=0,mi=0,ex=0,el=0;posts.forEach((p,i)=>{const s=cell(m,i);if(s==="owner")return;if(s==="na")return;if(s==="excused"){ex++;return}el++;if(s==="engaged")e++;else mi++});return{name:m,engaged:e,missed:mi,excused:ex,eligible:el,pct:el?e/el*100:0}});
+  const tierOf=s=>s.name==="Franklin"?"New Member":s.pct>=80?"Core":s.pct>=50?"Borderline":"At Risk";
+  stats.forEach(s=>s.tier=tierOf(s));
+  const TC={"Core":"#22c55e","Borderline":"#eab308","At Risk":"#ef4444","New Member":"#3b82f6"};
+  const TB={"Core":"b-green","Borderline":"b-yellow","At Risk":"b-red","New Member":"b-blue"};
+  const sum=a=>a.reduce((x,y)=>x+y,0);
+  const fmt=v=>v.toFixed(1)+'%';
+  const ini=n=>n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+
+  const totalE=sum(stats.map(s=>s.engaged)), totalOpp=sum(stats.map(s=>s.eligible)), totalMis=sum(stats.map(s=>s.missed)), totalEx=sum(stats.map(s=>s.excused));
+  const overall=totalOpp?totalE/totalOpp*100:0;
+  const byPct=[...stats].sort((a,b)=>b.pct-a.pct);
+  const topC=byPct[0];
+  const low=[...stats].filter(s=>s.eligible>0).sort((a,b)=>a.pct-b.pct)[0];
+  const counts={Core:stats.filter(s=>s.tier==="Core").length,Borderline:stats.filter(s=>s.tier==="Borderline").length,"At Risk":stats.filter(s=>s.tier==="At Risk").length,"New Member":stats.filter(s=>s.tier==="New Member").length};
+  const postStats=posts.map((p,i)=>{const aud=members.filter(m=>m!==p.owner&&!(m==="Franklin"&&i<fStart)).length;const denom=Math.max(1,aud-(p.excused?p.excused.length:0));return{...p,label:`P${p.n}`,count:p.engaged.length,denom,pct:p.engaged.length/denom*100}});
+  const mostP=[...postStats].sort((a,b)=>b.count-a.count)[0];
+  const leastP=[...postStats].sort((a,b)=>a.count-b.count)[0];
+  const fh=postStats.slice(0,Math.floor(postStats.length/2)).map(p=>p.count), sh=postStats.slice(Math.floor(postStats.length/2)).map(p=>p.count);
+  const avgA=sum(fh)/fh.length, avgB=sum(sh)/sh.length, delta=avgB-avgA;
+  const dir=delta<-1?"Declining":delta>1?"Rising":"Stable";
+
+  document.getElementById('meta').textContent=`${members.length} members · ${posts.length} valid posts · ${fmt(overall)} participation`;
+
+  // ===== micro-interaction: count-up =====
+  function countUp(el,to,{dec=0,suffix=''}={}){
+    if(!el)return; const dur=900, start=performance.now();
+    function tick(now){const t=Math.min(1,(now-start)/dur);const e=1-Math.pow(1-t,3);el.textContent=(to*e).toFixed(dec)+suffix;if(t<1)requestAnimationFrame(tick);else el.textContent=to.toFixed(dec)+suffix;}
+    requestAnimationFrame(tick);
+  }
+  const S=(id,v)=>document.getElementById(id).textContent=v;
+
+  // ===== SUMMARY KPIs (animated) =====
+  countUp(document.getElementById('kMem'),members.length);
+  countUp(document.getElementById('kPost'),posts.length);
+  countUp(document.getElementById('kPart'),overall,{dec:1,suffix:'%'});
+  document.getElementById('kPartS').textContent=`${totalE}/${totalOpp} opps`;
+  countUp(document.getElementById('kCore'),counts.Core);
+  countUp(document.getElementById('kBord'),counts.Borderline);
+  countUp(document.getElementById('kRisk'),counts["At Risk"]);
+
+  const st=document.getElementById('status');
+  let stTtl="Healthy",stCls="healthy";
+  if(overall<55){stTtl="Needs Intervention";stCls="danger"}else if(overall<70){stTtl="Watch";stCls="";}
+  st.className="status "+stCls;
+  S('stTtl',stTtl);S('stPc',`${fmt(overall)} participation`);
+
+  document.getElementById('topSpot').innerHTML=`<div class="av">${ini(topC.name)}</div><div><div class="role">Top Contributor</div><div class="nm">${topC.name}</div><div class="mt">${topC.engaged} cmt · ${topC.missed} miss</div></div><div class="pc">${fmt(topC.pct)}</div>`;
+  document.getElementById('lowSpot').innerHTML=`<div class="av">${ini(low.name)}</div><div><div class="role">Lowest Contributor</div><div class="nm">${low.name}</div><div class="mt">${low.engaged} cmt · ${low.missed} miss</div></div><div class="pc">${fmt(low.pct)}</div>`;
+
+  document.getElementById('trArrow').innerHTML=dir==="Declining"?'<span style="color:#f87171">↓</span>':dir==="Rising"?'<span style="color:#4ade80">↑</span>':'<span style="color:#facc15">→</span>';
+  document.getElementById('trSub').textContent=dir;
+
+  new Chart(document.getElementById('miniTrend'),{type:'line',data:{labels:postStats.map(p=>p.label),datasets:[{data:postStats.map(p=>p.count),borderColor:'#d4d4d8',backgroundColor:'rgba(255,255,255,.08)',fill:true,tension:.35,pointRadius:0,borderWidth:2}]},options:{plugins:{legend:{display:false},datalabels:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false,beginAtZero:true}}}});
+
+  // ===== HEATMAP builder (data attrs + staggered reveal) =====
+  const statusText={engaged:"Engaged",missed:"Missed",owner:"Post owner",excused:"Excused",na:"Not yet a member"};
+  function buildHeat(el){
+    const rows=[...stats].sort((a,b)=>b.pct-a.pct);
+    let h='<thead><tr><th class="name">Member</th>';
+    posts.forEach(p=>h+=`<th>P${p.n}<span class="ow">${p.owner.split(' ')[0]}</span></th>`);
+    h+='<th>Cmt</th><th>Mis</th><th>%</th></tr></thead><tbody>';
+    rows.forEach((s,ri)=>{
+      const trc=s.tier==="Core"?"hr-core":s.tier==="Borderline"?"hr-border":s.tier==="At Risk"?"hr-risk":"hr-new";
+      const zero=s.engaged===0&&s.eligible>0;
+      h+=`<tr class="${trc} ${zero?'hr-zero':''}"><td class="name">${s.name} <span class="badge ${TB[s.tier]}">${s.tier}</span></td>`;
+      posts.forEach((p,i)=>{const c=cell(s.name,i);const cl=c==="engaged"?"c-eng":c==="missed"?"c-mis":c==="owner"?"c-own":c==="excused"?"c-exc":"c-na";const ch=c==="engaged"?"✓":c==="missed"?"✗":c==="owner"?"★":c==="excused"?"⊝":"–";const d=Math.min(0.5,(ri*posts.length+i)*0.004);h+=`<td data-m="${s.name}" data-p="P${p.n}" data-o="${p.owner}" data-st="${statusText[c]}"><span class="cell ${cl}" style="animation-delay:${d}s">${ch}</span></td>`});
+      h+=`<td class="sm">${s.engaged}</td><td class="sm" style="color:${s.missed>=6?'#f87171':s.missed>=3?'#facc15':'#d4d4d8'}">${s.missed}</td><td class="sm smpct" style="color:${TC[s.tier]}">${s.pct.toFixed(0)}%</td></tr>`;
+    });
+    h+='</tbody>';
+    document.getElementById(el).innerHTML=h;
+  }
+  buildHeat('heatSummary');buildHeat('heatFull');
+
+  // heatmap tooltip
+  const tip=document.getElementById('heatTip');
+  function wireTip(tableId){
+    const t=document.getElementById(tableId);
+    t.addEventListener('mousemove',e=>{
+      const td=e.target.closest('td[data-m]');
+      if(!td){tip.classList.remove('show');return}
+      tip.innerHTML=`<b>${td.dataset.m}</b> · ${td.dataset.p}<br><span class="k">Status:</span> <b>${td.dataset.st}</b><br><span class="k">Post owner:</span> ${td.dataset.o}`;
+      tip.classList.add('show');
+      const pad=14; let x=e.clientX+pad, y=e.clientY+pad;
+      const r=tip.getBoundingClientRect();
+      if(x+r.width>window.innerWidth)x=e.clientX-r.width-pad;
+      if(y+r.height>window.innerHeight)y=e.clientY-r.height-pad;
+      tip.style.left=x+'px';tip.style.top=y+'px';
+    });
+    t.addEventListener('mouseleave',()=>tip.classList.remove('show'));
+  }
+  wireTip('heatSummary');wireTip('heatFull');
+
+  // ===== ACCOUNTABILITY =====
+  const accTop=byPct.slice(0,5);
+  const med=['🥇','🥈','🥉','4️⃣','5️⃣'];
+  document.getElementById('accTop').innerHTML=accTop.map((s,i)=>`<div class="acc-item acc-top"><div class="rk">${med[i]}</div><div><div class="nm">${s.name}</div><div class="mt">${s.engaged} cmt · ${s.missed} miss · ${s.tier}</div></div><div class="pc">${fmt(s.pct)}</div></div>`).join('');
+  const watchList=stats.filter(s=>s.tier==="Borderline").sort((a,b)=>a.pct-b.pct);
+  document.getElementById('accWatch').innerHTML=watchList.map(s=>`<div class="acc-item acc-watch"><div class="rk">⚠️</div><div><div class="nm">${s.name}</div><div class="mt">${s.missed} missed of ${s.eligible}</div></div><div class="pc">${fmt(s.pct)}</div></div>`).join('');
+  const riskList=stats.filter(s=>s.tier==="At Risk").sort((a,b)=>a.pct-b.pct);
+  document.getElementById('accRisk').innerHTML=riskList.map(s=>{const z=s.engaged===0&&s.eligible>0?'<span class="badge b-zero">0%</span>':'';return `<div class="acc-item acc-risk"><div class="rk">🚨</div><div><div class="nm">${s.name} ${z}</div><div class="mt">${s.missed} missed of ${s.eligible}</div></div><div class="pc">${fmt(s.pct)}</div></div>`}).join('');
+
+  // ===== RANKINGS (animated bars) =====
+  const maxMis=Math.max(...stats.map(s=>s.missed));
+  function row(s,i,mode){
+    const cls=i===0?'m1':i===1?'m2':i===2?'m3':'';
+    const rk=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);
+    const z=s.engaged===0&&s.eligible>0?'<span class="badge b-zero">0%</span>':'';
+    if(mode==='part'){
+      return `<div class="lb-row ${cls}"><div class="rk">${rk}</div><div><div class="nm">${s.name} ${z}</div><div class="bar"><span data-w="${s.pct}" style="background:${TC[s.tier]}"></span></div></div><div class="n">${s.pct.toFixed(0)}%</div><div class="n">${s.engaged}</div><div class="n">${s.missed}</div><div class="p"><span class="badge ${TB[s.tier]}">${s.tier}</span></div></div>`;
+    }
+    return `<div class="lb-row"><div class="rk">${i+1}</div><div><div class="nm">${s.name} ${z}</div><div class="bar"><span data-w="${s.missed/Math.max(1,maxMis)*100}" style="background:#ef4444"></span></div></div><div class="n">${s.missed}</div><div class="n">${s.engaged}</div><div class="n">${s.eligible}</div><div class="p"><span class="badge ${TB[s.tier]}">${s.tier}</span></div></div>`;
+  }
+  document.getElementById('partLb').innerHTML=byPct.map((s,i)=>row(s,i,'part')).join('');
+  document.getElementById('debtLb').innerHTML=[...stats].sort((a,b)=>b.missed-a.missed||a.pct-b.pct).map((s,i)=>row(s,i,'debt')).join('');
+  function animateBars(){requestAnimationFrame(()=>document.querySelectorAll('.lb-row .bar>span[data-w]').forEach(el=>{el.style.width='0';requestAnimationFrame(()=>el.style.width=el.dataset.w+'%')}));}
+
+  // ===== HEALTH =====
+  new Chart(document.getElementById('tierDonut'),{type:'doughnut',data:{labels:["Core","Borderline","At Risk","New Member"],datasets:[{data:[counts.Core,counts.Borderline,counts["At Risk"],counts["New Member"]],backgroundColor:["#22c55e","#eab308","#ef4444","#3b82f6"],borderColor:'#0b0d13',borderWidth:3}]},options:{cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'#d4d4d8',padding:8,boxWidth:9,font:{size:10}}},datalabels:{color:'#fff',font:{weight:'700',size:12}}}}});
+  const bands=[{l:"0–24",min:0,max:25,c:'#ef4444'},{l:"25–49",min:25,max:50,c:'#f97316'},{l:"50–79",min:50,max:80,c:'#eab308'},{l:"80–100",min:80,max:101,c:'#22c55e'}];
+  new Chart(document.getElementById('bandChart'),{type:'bar',data:{labels:bands.map(b=>b.l+'%'),datasets:[{data:bands.map(b=>stats.filter(s=>s.pct>=b.min&&s.pct<b.max).length),backgroundColor:bands.map(b=>b.c),borderRadius:6}]},options:{plugins:{legend:{display:false},datalabels:{anchor:'end',align:'top',color:'#fff',font:{weight:'700'}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,color:'#a1a1aa'},grid:{color:'rgba(255,255,255,.06)'}},x:{grid:{display:false},ticks:{color:'#d4d4d8'}}}}});
+  new Chart(document.getElementById('splitChart'),{type:'doughnut',data:{labels:['Comments','Missed','Excused'],datasets:[{data:[totalE,totalMis,totalEx],backgroundColor:['#22c55e','#ef4444','#3b82f6'],borderColor:'#0b0d13',borderWidth:3}]},options:{cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'#d4d4d8',padding:8,boxWidth:9,font:{size:10}}},datalabels:{color:'#fff',font:{weight:'700',size:11}}}}});
+  document.getElementById('roster').innerHTML=["Core","Borderline","At Risk","New Member"].map(t=>{const ppl=stats.filter(s=>s.tier===t).sort((a,b)=>b.pct-a.pct);return `<div class="rt"><div class="h"><span class="badge ${TB[t]}">${t}</span><span style="font-size:10px;color:var(--dim)">${ppl.length}</span></div><div class="chips">${ppl.map(p=>`<span class="chip">${p.name}<span class="p">${fmt(p.pct)}</span></span>`).join('')}</div></div>`}).join('');
+
+  // ===== POSTS =====
+  document.getElementById('trendStats').innerHTML=`
+    <div class="c4"><div class="tstat up"><div class="l">Most Engaged Post</div><div class="v">${mostP.label} · ${mostP.count} comments</div><div class="s">Owner: ${mostP.owner}</div></div></div>
+    <div class="c4"><div class="tstat down"><div class="l">Least Engaged Post</div><div class="v">${leastP.label} · ${leastP.count} comments</div><div class="s">Owner: ${leastP.owner}</div></div></div>
+    <div class="c4"><div class="tstat ${dir==='Declining'?'down':dir==='Rising'?'up':''}"><div class="l">Trajectory</div><div class="v">${dir}</div><div class="s">${avgA.toFixed(1)} → ${avgB.toFixed(1)} avg comments/post</div></div></div>`;
+  const perfColor=pct=>pct>=70?'#22c55e':pct>=55?'#84cc16':pct>=45?'#eab308':pct>=35?'#f97316':'#ef4444';
+  new Chart(document.getElementById('trendBig'),{data:{labels:postStats.map(p=>`${p.label}·${p.owner}`),datasets:[{type:'bar',label:'Comments',data:postStats.map(p=>p.count),backgroundColor:postStats.map(p=>perfColor(p.pct)),borderRadius:5,order:2},{type:'line',label:'Participation %',data:postStats.map(p=>+p.pct.toFixed(1)),borderColor:'#fbbf24',backgroundColor:'#fbbf24',tension:.35,pointRadius:3,borderWidth:2,yAxisID:'y1',order:1}]},options:{plugins:{legend:{labels:{color:'#d4d4d8',boxWidth:11}},datalabels:{display:c=>c.dataset.type==='bar',anchor:'end',align:'top',color:'#fff',font:{weight:'700',size:10}},tooltip:{callbacks:{label:c=>c.dataset.type==='line'?`Participation: ${c.parsed.y}%`:`Comments: ${c.parsed.y}`}}},scales:{y:{beginAtZero:true,ticks:{color:'#a1a1aa'},grid:{color:'rgba(255,255,255,.06)'}},y1:{beginAtZero:true,max:100,position:'right',ticks:{color:'#a1a1aa',callback:v=>v+'%'},grid:{display:false}},x:{ticks:{color:'#d4d4d8',font:{size:10}},grid:{display:false}}}}});
+
+  // ===== SHARE =====
+  document.getElementById('scSub').textContent=`${members.length} members · ${posts.length} valid posts · ${dir} engagement`;
+  document.getElementById('scPart').textContent=fmt(overall);
+  document.getElementById('scPart').style.color=overall>=70?'#4ade80':overall>=55?'#facc15':'#f87171';
+  new Chart(document.getElementById('scDonut'),{type:'doughnut',data:{labels:["Core","Border","At Risk","New"],datasets:[{data:[counts.Core,counts.Borderline,counts["At Risk"],counts["New Member"]],backgroundColor:["#22c55e","#eab308","#ef4444","#3b82f6"],borderColor:'#0e1016',borderWidth:3}]},options:{cutout:'55%',plugins:{legend:{position:'bottom',labels:{color:'#a1a1aa',padding:6,boxWidth:8,font:{size:9}}},datalabels:{color:'#fff',font:{weight:'700',size:11}}}}});
+  const scTop=byPct.slice(0,5), scBot=[...stats].filter(s=>s.eligible>0).sort((a,b)=>a.pct-b.pct).slice(0,5);
+  document.getElementById('scTop').innerHTML=scTop.map((s,i)=>`<div class="row"><span class="nm">${med[i]} ${s.name}</span><span class="pc" style="color:${TC[s.tier]}">${fmt(s.pct)}</span></div>`).join('');
+  document.getElementById('scBottom').innerHTML=scBot.map(s=>{const z=s.engaged===0?'<span class="badge b-zero">0%</span>':'';return `<div class="row"><span class="nm">${s.name} ${z}</span><span class="pc" style="color:${TC[s.tier]}">${fmt(s.pct)}</span></div>`}).join('');
+  const mhRows=[...stats].sort((a,b)=>b.pct-a.pct);
+  document.getElementById('scHeat').innerHTML=mhRows.map(s=>{
+    const cells=posts.map((_,i)=>{const c=cell(s.name,i);const col=c==="engaged"?"#16a34a":c==="missed"?"#ef4444":c==="owner"?"#a855f7":c==="excused"?"#3b82f6":"rgba(255,255,255,.06)";return `<div class="sc-mini-cell" style="background:${col}"></div>`}).join('');
+    return `<div class="sc-mini-row" style="grid-template-columns:64px repeat(${posts.length},1fr)"><div style="font-size:9.5px;font-weight:600;color:${TC[s.tier]};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</div>${cells}</div>`;
+  }).join('');
+  new Chart(document.getElementById('scTrend'),{type:'line',data:{labels:postStats.map(p=>p.label),datasets:[{data:postStats.map(p=>p.count),borderColor:'#d4d4d8',backgroundColor:'rgba(255,255,255,.08)',fill:true,tension:.35,pointRadius:0,borderWidth:2}]},options:{plugins:{legend:{display:false},datalabels:{display:false}},scales:{x:{ticks:{color:'#a1a1aa',font:{size:8}},grid:{display:false}},y:{display:false,beginAtZero:true}}}});
+  document.getElementById('scTrendStat').className="tstat "+(dir==='Declining'?'down':dir==='Rising'?'up':'');
+  document.getElementById('scTrendStat').innerHTML=`<div class="l">Trajectory</div><div class="v">${dir}</div><div class="s">Most: ${mostP.label} (${mostP.count}) · Least: ${leastP.label} (${leastP.count})</div>`;
+  document.getElementById('dlShare').addEventListener('click',()=>{alert('To share: screenshot the card below. (Works on all platforms — WhatsApp, LinkedIn, Slack.)')});
+
+  // ===== NAVIGATION =====
+  const tabs=document.getElementById('tabs');
+  const sections=document.querySelectorAll('.section');
+  function go(name){
+    document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active',b.dataset.s===name));
+    sections.forEach(sec=>sec.classList.toggle('active',sec.dataset.section===name));
+    if(name==='rankings')animateBars();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  tabs.addEventListener('click',e=>{const b=e.target.closest('button[data-s]');if(b)go(b.dataset.s)});
+
+  // init icons + first bar animation
+  if(window.lucide&&lucide.createIcons)lucide.createIcons();
+  animateBars();
+
+  // ===== report versioning stamp (relative paths → works on file:// and Vercel) =====
+  (function(){
+    var r=window.__REPORT__||{};
+    // Snapshots live at /reports/<date>/index.html (2 levels deep); everything else is at the root.
+    var base=/\/reports\/[^/]+\/?[^/]*$/.test(location.pathname)?'../../':'./';
+    var link=document.getElementById('archiveLink');
+    if(link)link.setAttribute('href',base+'archive.html');
+    var el=document.getElementById('reportStamp');
+    if(!el)return;
+    if(!r.date){el.textContent='Live preview';return;}
+    el.textContent='Report \u00b7 '+r.date;
+    // Latest/Archived badge needs the manifest (only resolvable over HTTP). Degrades gracefully on file://.
+    fetch(base+'reports/manifest.json',{cache:'no-store'}).then(function(x){return x.json();}).then(function(m){
+      var latest=m&&m.latest===r.date;
+      el.textContent=(latest?'Latest':'Archived')+' \u00b7 '+r.date;
+      el.classList.add(latest?'rs-latest':'rs-arch');
+    }).catch(function(){});
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Report Archive · LinkedIn Engagement Audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="reports/manifest.js"></script>
+<style>
+  :root{
+    --bg:#08090d;--surface:rgba(255,255,255,.025);--surface-2:rgba(255,255,255,.045);--surface-3:rgba(255,255,255,.07);
+    --hairline:rgba(255,255,255,.06);--ring:rgba(255,255,255,.10);
+    --text:#f4f4f5;--muted:#a1a1aa;--dim:#71717a;--faint:#52525b;
+    --green:#22c55e;--yellow:#eab308;--red:#ef4444;--shadow:0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  *{box-sizing:border-box}html,body{margin:0;padding:0}
+  body{
+    font-family:'Geist','Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:radial-gradient(900px 500px at 8% -8%,rgba(255,255,255,.035),transparent 60%),radial-gradient(700px 420px at 100% 0%,rgba(255,255,255,.022),transparent 55%),var(--bg);
+    color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;font-size:13px;letter-spacing:-0.006em;
+  }
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:8px;border:2px solid transparent;background-clip:content-box}
+  .topbar{position:sticky;top:0;z-index:100;background:rgba(8,9,13,.72);backdrop-filter:blur(14px);border-bottom:1px solid var(--hairline);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#3f3f46,#18181b);box-shadow:inset 0 0 0 1px var(--ring);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:#fafafa}
+  .brand .name{font-weight:700;font-size:13.5px;line-height:1;letter-spacing:-0.01em}
+  .brand .sub{font-size:10.5px;color:var(--dim);margin-top:2px}
+  .ghost-link{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;padding:7px 11px;border-radius:8px;box-shadow:inset 0 0 0 1px var(--hairline);transition:color .15s,box-shadow .15s}
+  .ghost-link:hover{color:var(--text);box-shadow:inset 0 0 0 1px var(--ring)}
+  .ghost-link svg{width:14px;height:14px}
+
+  main{padding:26px 18px 48px;max-width:1100px;margin:0 auto}
+  .head{margin-bottom:6px}
+  .head h1{margin:0;font-size:28px;font-weight:700;letter-spacing:-0.03em;display:flex;align-items:center;gap:11px}
+  .head h1 svg{width:24px;height:24px;color:var(--dim)}
+  .head p{margin:8px 0 0;font-size:13px;color:var(--dim);max-width:620px}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:22px 0}
+  .stat{background:var(--surface);box-shadow:inset 0 0 0 1px var(--hairline);border-radius:12px;padding:13px 15px}
+  .stat .l{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+  .stat .v{font-size:24px;font-weight:800;letter-spacing:-0.03em;margin-top:3px;font-variant-numeric:tabular-nums}
+
+  .table-wrap{background:var(--surface);box-shadow:inset 0 0 0 1px var(--hairline),var(--shadow);border-radius:16px;overflow:hidden}
+  .row-h,.row{display:grid;grid-template-columns:1.1fr .9fr 1fr .7fr .7fr 110px;gap:12px;align-items:center;padding:13px 18px}
+  .row-h{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--dim);font-weight:700;border-bottom:1px solid var(--hairline)}
+  .row{border-bottom:1px solid var(--hairline);transition:background .15s;text-decoration:none;color:inherit}
+  .row:last-child{border-bottom:none}
+  .row:hover{background:var(--surface-2)}
+  .row .date{font-weight:700;font-size:13.5px;letter-spacing:-0.01em;display:flex;align-items:center;gap:9px}
+  .row .num{font-variant-numeric:tabular-nums;font-weight:700;font-size:13px}
+  .row .part{display:flex;align-items:center;gap:9px;min-width:0}
+  .bar{flex:1;height:6px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden;max-width:120px}
+  .bar>span{display:block;height:100%;border-radius:4px}
+  .badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:10px;font-weight:700;box-shadow:inset 0 0 0 1px transparent;white-space:nowrap}
+  .b-green{background:rgba(34,197,94,.1);color:#86efac;box-shadow:inset 0 0 0 1px rgba(34,197,94,.3)}
+  .b-yellow{background:rgba(234,179,8,.1);color:#fde68a;box-shadow:inset 0 0 0 1px rgba(234,179,8,.3)}
+  .b-red{background:rgba(239,68,68,.1);color:#fca5a5;box-shadow:inset 0 0 0 1px rgba(239,68,68,.3)}
+  .latest-pill{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#86efac;background:rgba(34,197,94,.12);box-shadow:inset 0 0 0 1px rgba(34,197,94,.35);padding:2px 7px;border-radius:999px}
+  .view{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--text);box-shadow:inset 0 0 0 1px var(--ring);padding:6px 11px;border-radius:8px}
+  .view svg{width:13px;height:13px}
+  .row:hover .view{box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
+  .msg{padding:40px 18px;text-align:center;color:var(--dim);font-size:13px}
+
+  /* ---- Tablet/Mobile: <=760px — stacked report cards, touch-friendly ---- */
+  @media (max-width:760px){
+    main{padding:20px 14px 40px}
+    .head h1{font-size:23px}
+    .topbar{flex-wrap:wrap;gap:10px;padding:10px 14px}
+    .ghost-link{min-height:44px}
+    .row-h{display:none}
+    .row{grid-template-columns:1fr 1fr;gap:10px 14px;padding:16px}
+    .row .date{grid-column:span 2;font-size:15px}
+    .row .view{grid-column:span 2;min-height:44px;margin-top:2px}
+  }
+
+  /* ---- Small phones: <=420px — single-column card ---- */
+  @media (max-width:420px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .row{grid-template-columns:1fr;gap:8px}
+    .row .date{grid-column:span 1}
+    .row .view{grid-column:span 1}
+    .bar{max-width:none}
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">
+    <div class="logo">LE</div>
+    <div><div class="name">Engagement Accountability Audit</div><div class="sub">Report Archive</div></div>
+  </div>
+  <a href="index.html" class="ghost-link"><i data-lucide="external-link"></i><span>Latest report</span></a>
+</div>
+
+<main>
+  <div class="head">
+    <h1><i data-lucide="archive"></i>Report Archive</h1>
+    <p>Every audit is preserved as an immutable, fully static snapshot. The latest report is always served at the site root; historical snapshots never change.</p>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="table-wrap">
+    <div class="row-h">
+      <div>Generated</div><div>Participation</div><div>Status</div><div>Members</div><div>Valid Posts</div><div></div>
+    </div>
+    <div id="rows"><div class="msg">Loading reports…</div></div>
+  </div>
+</main>
+
+<script>
+  const fmtDate=d=>{const t=new Date(d+'T00:00:00');return isNaN(t)?d:t.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});};
+  const statusBadge=s=>{const c=s==='Healthy'?'b-green':s==='Watch'?'b-yellow':'b-red';return `<span class="badge ${c}">${s}</span>`;};
+  const partColor=p=>p>=70?'#22c55e':p>=55?'#84cc16':p>=45?'#eab308':p>=35?'#f97316':'#ef4444';
+
+  const relPath=p=>{const rel=String(p||'').replace(/^\//,'');return rel+(rel.endsWith('/')?'index.html':'');};
+
+  function render(data){
+    const reports=[...((data&&data.reports)||[])].sort((a,b)=>b.date.localeCompare(a.date));
+    const rowsEl=document.getElementById('rows');
+    if(!reports.length){rowsEl.innerHTML='<div class="msg">No reports archived yet.</div>';return;}
+
+    const latestDate=(data&&data.latest)||reports[0].date;
+    const avg=reports.reduce((s,r)=>s+(+r.participation||0),0)/reports.length;
+    document.getElementById('stats').innerHTML=`
+      <div class="stat"><div class="l">Total Reports</div><div class="v">${reports.length}</div></div>
+      <div class="stat"><div class="l">Latest Participation</div><div class="v" style="color:${partColor(reports[0].participation)}">${(+reports[0].participation).toFixed(1)}%</div></div>
+      <div class="stat"><div class="l">Average Participation</div><div class="v">${avg.toFixed(1)}%</div></div>
+      <div class="stat"><div class="l">Latest Audit</div><div class="v" style="font-size:18px">${fmtDate(latestDate)}</div></div>`;
+
+    rowsEl.innerHTML=reports.map(r=>{
+      const isLatest=r.date===latestDate;
+      const p=+r.participation||0;
+      return `<a class="row" href="${relPath(r.path)}">
+        <div class="date">${fmtDate(r.generatedAt||r.date)} ${isLatest?'<span class="latest-pill">Latest</span>':''}</div>
+        <div class="part"><div class="bar"><span style="width:${p}%;background:${partColor(p)}"></span></div><span class="num">${p.toFixed(1)}%</span></div>
+        <div>${statusBadge(r.status)}</div>
+        <div class="num">${r.members}</div>
+        <div class="num">${r.validPosts}</div>
+        <div><span class="view"><i data-lucide="eye"></i>View</span></div>
+      </a>`;
+    }).join('');
+    if(window.lucide&&lucide.createIcons)lucide.createIcons();
+  }
+
+  function fail(msg){
+    document.getElementById('rows').innerHTML=`<div class="msg">Could not load the report manifest${msg?' ('+msg+')':''}.<br>Run <code>node build-report.js</code> to generate it, then reload.</div>`;
+  }
+
+  // Prefer the script-loaded manifest (works over file:// too); fall back to fetching the JSON.
+  if(window.__REPORT_MANIFEST__){
+    render(window.__REPORT_MANIFEST__);
+  }else{
+    fetch('reports/manifest.json',{cache:'no-store'})
+      .then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
+      .then(render)
+      .catch(err=>fail(err.message));
+  }
+
+  if(window.lucide&&lucide.createIcons)lucide.createIcons();
+</script>
+</body>
+</html>

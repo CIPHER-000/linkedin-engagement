@@ -1,0 +1,10 @@
+{
+  "name": "linkedin-engagement-audit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static, versioned LinkedIn engagement accountability audit reports.",
+  "scripts": {
+    "archive": "node build-report.js",
+    "serve": "npx --yes serve ."
+  }
+}

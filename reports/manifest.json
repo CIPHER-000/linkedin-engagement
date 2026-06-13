@@ -1,0 +1,15 @@
+{
+  "generator": "linkedin-engagement-audit",
+  "latest": "2026-06-13",
+  "reports": [
+    {
+      "date": "2026-06-13",
+      "path": "/reports/2026-06-13/",
+      "participation": 56.3,
+      "status": "Watch",
+      "members": 18,
+      "validPosts": 13,
+      "generatedAt": "2026-06-13"
+    }
+  ]
+}
