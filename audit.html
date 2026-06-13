@@ -57,6 +57,8 @@
   .brand .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#3f3f46,#18181b);box-shadow:inset 0 0 0 1px var(--ring);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:#fafafa}
   .brand .name{font-weight:700;font-size:13.5px;line-height:1;letter-spacing:-0.01em}
   .brand .sub{font-size:10.5px;color:var(--dim);margin-top:2px}
+  .audit-period{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;color:var(--muted);background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--hairline);padding:3px 9px;border-radius:999px;margin-top:4px;white-space:nowrap}
+  .audit-period svg{width:12px;height:12px;color:var(--dim)}
   nav.tabs{display:flex;gap:2px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--hairline);padding:4px;border-radius:11px}
   nav.tabs button{
     display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;color:var(--muted);font-size:12px;font-weight:600;
@@ -312,7 +314,7 @@
 <div class="topbar">
   <div class="brand">
     <div class="logo">LE</div>
-    <div><div class="name">Engagement Accountability Audit</div><div class="sub">LinkedIn Community</div></div>
+    <div><div class="name">Engagement Accountability Audit</div><div class="sub">LinkedIn Community</div><div class="audit-period" id="auditPeriod"><i data-lucide="calendar-range"></i><span>—</span></div></div>
   </div>
   <nav class="tabs" id="tabs">
     <button data-s="summary" class="active"><i data-lucide="layout-dashboard"></i><span>Summary</span></button>
@@ -645,6 +647,9 @@
     if(!el)return;
     if(!r.date){el.textContent='Live preview';return;}
     el.textContent='Report \u00b7 '+r.date;
+    // Audit period badge (preserved in archived snapshots)
+    var ap=document.getElementById('auditPeriod');
+    if(ap&&r.auditPeriod){ap.querySelector('span').textContent=r.auditPeriod;}
     // Latest/Archived badge needs the manifest (only resolvable over HTTP). Degrades gracefully on file://.
     fetch(base+'reports/manifest.json',{cache:'no-store'}).then(function(x){return x.json();}).then(function(m){
       var latest=m&&m.latest===r.date;

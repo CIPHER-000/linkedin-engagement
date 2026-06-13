@@ -30,6 +30,21 @@ function today() {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
+function formatShortDate(d) {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[d.getMonth()]} ${d.getDate()}`;
+}
+
+function auditPeriodFor(reportDate) {
+  const end = new Date(reportDate + 'T00:00:00');
+  const start = new Date(end);
+  start.setDate(start.getDate() - 13); // 14-day inclusive bi-weekly window
+  const sameYear = start.getFullYear() === end.getFullYear();
+  const startStr = formatShortDate(start);
+  const endStr = formatShortDate(end) + (sameYear ? '' : `, ${end.getFullYear()}`);
+  return `${startStr} – ${endStr}, ${start.getFullYear()}`;
+}
+
 const date = process.argv[2] || today();
 if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
   console.error(`Invalid date "${date}". Expected YYYY-MM-DD.`);
@@ -88,7 +103,8 @@ function computeMetrics() {
 
 /* ---- Produce a self-contained report HTML carrying its own date ---- */
 function makeReportHtml(reportDate) {
-  const config = `<script>window.__REPORT__={date:"${reportDate}"};<\/script>`;
+  const period = auditPeriodFor(reportDate);
+  const config = `<script>window.__REPORT__={date:"${reportDate}",auditPeriod:"${period}"};<\/script>`;
   if (masterHtml.includes('<!-- REPORT_CONFIG -->')) {
     return masterHtml.replace('<!-- REPORT_CONFIG -->', config);
   }
