@@ -38,7 +38,7 @@ function formatShortDate(d) {
 function auditPeriodFor(reportDate) {
   const end = new Date(reportDate + 'T00:00:00');
   const start = new Date(end);
-  start.setDate(start.getDate() - 13); // 14-day inclusive bi-weekly window
+  start.setDate(1); // start of the report month
   const sameYear = start.getFullYear() === end.getFullYear();
   const startStr = formatShortDate(start);
   const endStr = formatShortDate(end) + (sameYear ? '' : `, ${end.getFullYear()}`);
